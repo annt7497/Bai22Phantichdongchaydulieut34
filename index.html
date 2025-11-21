@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Học: Phân Tích Dòng Chảy Dữ Liệu</title>
+    <!-- Tải Tailwind CSS để tạo giao diện đẹp và responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .flow-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            min-height: 120px;
+            justify-content: center;
+            text-align: center;
+        }
+        .data-flow-line {
+            position: absolute;
+            height: 3px;
+            background-color: #3b82f6; /* Blue 500 */
+            transition: all 0.5s ease-in-out;
+            opacity: 0;
+            z-index: 10;
+        }
+        .data-label {
+            position: absolute;
+            background-color: #1d4ed8; /* Blue 700 */
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: opacity 0.5s;
+            opacity: 0;
+            z-index: 20;
+            white-space: nowrap;
+        }
+        .lesson-section {
+            border-left: 4px solid #f97316; /* Orange 500 */
+            padding-left: 1rem;
+            margin-bottom: 2rem;
+        }
+        .diagram-box {
+            background-color: #f0f9ff;
+            border: 1px dashed #93c5fd;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <header class="text-center mb-8 bg-blue-600 text-white p-6 rounded-xl shadow-lg">
+        <h1 class="text-3xl font-extrabold">PHÂN TÍCH DÒNG CHẢY DỮ LIỆU</h1>
+        <p class="text-xl font-light mt-1">[IT5-Lesson 3.1] - Chuẩn bị trước khi đến lớp</p>
+    </header>
+
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-2xl space-y-8">
+
+        <!-- MỤC TIÊU BÀI HỌC -->
+        <div class="lesson-section">
+            <h2 class="text-2xl font-bold text-orange-600 mb-4">I. Mục Tiêu Các Tiết Học</h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4">
+                <li><span class="font-bold">Nhận diện:</span> Liệt kê được các đối tượng (người, hệ thống) tham gia vào một quy trình.</li>
+                <li><span class="font-bold">Mô tả:</span> Mô tả được thông tin mỗi đối tượng <span class="font-bold">GỬI</span> và <span class="font-bold">NHẬN</span>.</li>
+                <li><span class="font-bold">Mô hình hóa:</span> Vẽ được <span class="font-bold">Sơ đồ Dòng Thông Tin (Data Flow Diagram)</span> đơn giản.</li>
+                <li><span class="font-bold">Phân tích:</span> Phân tích được các nhánh rẽ và hệ quả khi có lỗi xảy ra.</li>
+            </ul>
+        </div>
+
+        <!-- HOẠT ĐỘNG KHỞI ĐỘNG & NHẬN DIỆN (TIẾT 3) -->
+        <div class="lesson-section">
+            <h2 class="text-2xl font-bold text-orange-600 mb-4">II. Khám Phá Quy Trình Mượn Sách</h2>
+            <p class="text-gray-700 mb-4"><span class="font-bold">Tình huống:</span> Bạn Minh muốn mượn sách. Đây là chuỗi hoạt động:</p>
+            <ol class="list-decimal list-inside text-gray-700 space-y-1 ml-4 bg-gray-100 p-3 rounded-lg">
+                <li>Minh đưa <span class="font-bold">Thẻ thư viện</span> cho cô thủ thư.</li>
+                <li>Cô thủ thư dùng máy quét, <span class="font-bold">quét Mã sách</span>.</li>
+                <li>Hệ thống máy tính <span class="font-bold">kiểm tra</span> thông tin mượn và trạng thái sách.</li>
+                <li>Minh <span class="font-bold">nhận sách</span>.</li>
+            </ol>
+            
+            <h3 class="text-xl font-semibold text-blue-700 mt-4 mb-2">Bảng Dữ Liệu Gửi - Nhận (Hoạt động 1, Tiết 3)</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-300 rounded-lg">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đối tượng</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gửi thông tin gì? (Data Output)</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nhận thông tin gì? (Data Input)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                        <tr><td class="px-3 py-2">Học sinh</td><td class="px-3 py-2">Mã thẻ</td><td class="px-3 py-2">Trạng thái mượn (Được/Không)</td></tr>
+                        <tr><td class="px-3 py-2">Thủ thư</td><td class="px-3 py-2">Yêu cầu kiểm tra, Mã sách</td><td class="px-3 py-2">Kết quả từ Hệ thống</td></tr>
+                        <tr><td class="px-3 py-2">Hệ thống</td><td class="px-3 py-2">Trạng thái mượn (Kết quả)</td><td class="px-3 py-2">Mã sách, Mã thẻ</td></tr>
+                        <tr><td class="px-3 py-2">Kho sách</td><td class="px-3 py-2">Trạng thái sách (Có/Hết)</td><td class="px-3 py-2">Yêu cầu kiểm tra</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-sm italic text-gray-500 mt-2">💡 <span class="font-bold">Kết luận:</span> Dữ liệu di chuyển liên tục, tạo thành <span class="font-bold">Dòng chảy Dữ liệu (Data Flow)</span>.</p>
+        </div>
+        
+        <!-- MÔ PHỎNG DÒNG CHẢY DỮ LIỆU -->
+        <div class="lesson-section bg-blue-50 p-6 rounded-lg">
+            <h2 class="text-2xl font-bold text-orange-600 mb-4">III. Mô Phỏng Sơ đồ Dòng Thông Tin (DFD)</h2>
+            
+            <div class="diagram-box">
+                <h3 class="text-lg font-semibold text-blue-800 mb-2">Sơ đồ quan hệ đơn giản (Ví dụ minh họa):</h3>
+                <p class="text-sm text-gray-700 mb-2">Sơ đồ DFD sử dụng hình hộp cho đối tượng và mũi tên cho dòng dữ liệu:</p>
+                <div class="text-center text-sm font-mono text-gray-900 bg-white p-2 rounded-md shadow-inner overflow-x-auto">
+                    
+                    <p class="mt-1"><span class="font-bold">Học sinh</span> → Mã thẻ/Mã sách → <span class="font-bold">Thủ thư</span> → Yêu cầu kiểm tra → <span class="font-bold">Hệ thống</span></p>
+                </div>
+            </div>
+
+            <p class="text-gray-700 mt-4 mb-4">Các em hãy nhập Mã thẻ và Mã sách để xem mô phỏng <span class="font-bold">toàn bộ</span> từng bước dữ liệu di chuyển giữa các đối tượng trong thư viện!</p>
+            
+            <!-- Khối nhập liệu của Học sinh -->
+            <div class="mb-6 p-4 border border-blue-300 rounded-lg bg-white shadow-md">
+                <h3 class="text-xl font-semibold text-blue-700 mb-3">1. Học Sinh (Nguồn dữ liệu)</h3>
+                <div class="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
+                    <input id="studentId" type="text" placeholder="Nhập Mã thẻ (VD: HS001)" value="HS001" class="p-2 border border-gray-300 rounded-md flex-grow focus:ring-blue-500 focus:border-blue-500">
+                    <input id="bookId" type="text" placeholder="Nhập Mã sách (VD: B001)" value="B001" class="p-2 border border-gray-300 rounded-md flex-grow focus:ring-blue-500 focus:border-blue-500">
+                    <button onclick="startBorrowProcess()" id="borrowButton" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition duration-300 shadow-md font-medium">
+                        Bắt đầu Mô phỏng
+                    </button>
+                </div>
+                <p class="text-sm italic text-gray-500 mt-2">Thử nghiệm các trường hợp: 
+                    <span class="font-medium text-green-700">HS001 & B001 (Thành công)</span>, 
+                    <span class="font-medium text-red-700">HS001 & B002 (Sách hết - Rẽ nhánh)</span>, 
+                    <span class="font-medium text-red-700">HS999 & B001 (Lỗi đầu vào - Ngừng)</span>.
+                </p>
+                <p id="errorMsg" class="text-red-500 mt-2 hidden">Vui lòng nhập đầy đủ Mã thẻ và Mã sách.</p>
+            </div>
+
+            <!-- Sơ đồ Dòng chảy Dữ liệu (DFD) -->
+            <div class="relative grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8 justify-items-center mt-6" id="dataFlowContainer">
+
+                <!-- Đối tượng 1: Học sinh -->
+                <div id="entity-student" class="flow-item bg-blue-100 border-2 border-blue-500 col-span-1 md:col-span-1">
+                    <span class="font-bold text-blue-800">HỌC SINH</span>
+                    <p class="text-sm text-gray-600 mt-1">Gửi: Mã thẻ, Mã sách</p>
+                </div>
+
+                <!-- Đối tượng 2: Thủ thư -->
+                <div id="entity-librarian" class="flow-item bg-yellow-100 border-2 border-yellow-500 col-span-1 md:col-span-1">
+                    <span class="font-bold text-yellow-800">THỦ THƯ</span>
+                    <p class="text-sm text-gray-600 mt-1">Xử lý & Gửi yêu cầu</p>
+                </div>
+
+                <!-- Đối tượng 3: Hệ thống Máy tính -->
+                <div id="entity-system" class="flow-item bg-green-100 border-2 border-green-500 col-span-1 md:col-span-1">
+                    <span class="font-bold text-green-800">HỆ THỐNG MÁY TÍNH</span>
+                    <p class="text-sm text-gray-600 mt-1">Kiểm tra Trạng thái Mượn</p>
+                </div>
+
+                <!-- Đối tượng 4: Kho sách -->
+                <div id="entity-book-stock" class="flow-item bg-red-100 border-2 border-red-500 col-span-1 md:col-span-1">
+                    <span class="font-bold text-red-800">KHO SÁCH</span>
+                    <p class="text-sm text-gray-600 mt-1">Kiểm tra Mã sách/Số lượng</p>
+                </div>
+
+                <!-- Vị trí giả lập để tạo dòng chảy ngược/kết quả -->
+                <div class="col-span-4 h-10 w-full"></div> 
+
+                <!-- Đối tượng 5: Kết quả (Back to Student/Học sinh) -->
+                <div id="entity-result" class="flow-item bg-indigo-100 border-2 border-indigo-500 col-span-4 md:col-span-4 w-full mx-auto">
+                    <span class="font-bold text-indigo-800">KẾT QUẢ/PHẢN HỒI</span>
+                    <p id="resultText" class="text-sm mt-1 text-gray-600">Chờ xử lý...</p>
+                </div>
+
+                <!-- Các Dòng Dữ liệu (Được tạo động bằng JS) -->
+            </div>
+        </div>
+
+        <!-- HOẠT ĐỘNG PHÂN TÍCH (TIẾT 4) -->
+        <div class="lesson-section">
+            <h2 class="text-2xl font-bold text-orange-600 mb-4">IV. Phân Tích Mối Quan Hệ và Nhánh Rẽ (Chuẩn bị cho Tiết 4)</h2>
+            <div class="space-y-3 text-gray-700">
+                <p><span class="font-bold">1. Lỗi Đầu Vào (VD: Mã thẻ sai):</span> Dòng thông tin sẽ dừng lại sớm và quay ngược lại. Dữ liệu "Thông báo lỗi" sẽ được gửi từ Hệ thống → Thủ thư → Học sinh. (Mô phỏng: Dừng sau Bước 2)</p>
+                <p><span class="font-bold">2. Thông tin Rẽ Nhánh (VD: Sách đã hết):</span> Dòng thông tin đi hết chu trình kiểm tra sách (Bước 3, 4) nhưng Hệ thống trả kết quả từ chối. (Mô phỏng: Dừng sau Bước 4, đi thẳng đến Phản hồi Cuối cùng)</p>
+                <p><span class="font-bold">3. Tối ưu hóa:</span> Để mượn sách nhanh hơn, chúng ta có thể tối ưu bằng cách cho Học sinh tự quét thẻ/sách, bỏ qua bước trung gian là Thủ thư. <span class="font-bold">(HS → Hệ thống → Kết quả)</span></p>
+            </div>
+        </div>
+        
+        <!-- TRỢ LÝ PHÂN TÍCH DFD THÔNG MINH (GEMINI API FEATURE) -->
+        <div class="lesson-section bg-gray-100 p-6 rounded-lg shadow-inner">
+            <h2 class="text-2xl font-bold text-green-700 mb-4">V. Trợ Lý Phân Tích DFD Thông Minh ✨</h2>
+            <p class="text-gray-700 mb-4">Sử dụng Trợ lý AI để phân tích các tình huống phức tạp hoặc ngoại lệ chưa được mô phỏng. Hãy nhập vào một kịch bản thư viện bất kỳ!</p>
+            
+            <div class="flex flex-col space-y-3">
+                <textarea id="scenarioInput" rows="3" placeholder="Ví dụ: Thủ thư bị ốm, phải dùng hệ thống tự động để mượn sách. Dòng chảy dữ liệu sẽ thay đổi như thế nào?" class="p-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"></textarea>
+                <button onclick="analyzeScenario()" id="analyzeButton" class="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition duration-300 shadow-lg font-medium">
+                    Phân Tích Dòng Chảy ✨
+                </button>
+            </div>
+            
+            <div id="analysisResult" class="mt-4 p-4 bg-white border border-green-300 rounded-lg hidden">
+                <h3 class="text-lg font-semibold text-green-800 mb-2">Kết Quả Phân Tích:</h3>
+                <p id="analysisText" class="text-gray-800 whitespace-pre-wrap">Chờ kịch bản...</p>
+                <p id="loadingIndicator" class="text-green-600 font-medium hidden">Đang phân tích...</p>
+            </div>
+        </div>
+        <!-- END GEMINI API FEATURE -->
+
+    </div>
+
+    <footer class="text-center mt-8 text-gray-500 text-sm pb-4">
+        <p>Tài liệu chuẩn bị bài học: Phân tích Dòng chảy Dữ liệu (IT5-L3.1)</p>
+    </footer>
+
+    <script>
+        // Cấu hình API của Gemini
+        const apiKey = ""; // API key sẽ được cung cấp trong môi trường Canvas
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        // Cấu hình các bước Dòng chảy Dữ liệu (giữ nguyên cho mô phỏng trực quan)
+        const flowSteps = [
+            { id: 1, from: 'entity-student', to: 'entity-librarian', data: 'Mã thẻ & Mã sách', status: 'Gửi Dữ liệu' },
+            { id: 2, from: 'entity-librarian', to: 'entity-system', data: 'Yêu cầu kiểm tra', status: 'Yêu cầu Xử lý' },
+            { id: 3, from: 'entity-system', to: 'entity-book-stock', data: 'Truy vấn Mã sách', status: 'Truy vấn Kho sách' },
+            { id: 4, from: 'entity-book-stock', to: 'entity-system', data: 'Trạng thái Sách (Có/Hết)', status: 'Phản hồi Trạng thái' },
+            { id: 5, from: 'entity-system', to: 'entity-librarian', data: 'Kết quả Mượn (Được/Không)', status: 'Gửi Kết quả' },
+            { id: 6, from: 'entity-librarian', to: 'entity-result', data: 'Giao sách hoặc Thông báo', status: 'Phản hồi Cuối cùng' }
+        ];
+
+        // Dữ liệu giả lập
+        const validStudentId = "HS001";
+        const validBookId = "B001";
+        const errorBookId = "B002"; // Ví dụ sách đã hết (Rẽ nhánh)
+        const invalidStudentId = "HS999"; // Ví dụ lỗi đầu vào
+
+        let isProcessing = false;
+        let flowElements = []; // Lưu trữ các phần tử dòng chảy đã được tạo
+
+        // Hàm chung để tạo các phần tử Dòng chảy (Đường kẻ và Nhãn)
+        function createFlowElement(step) {
+            const fromEl = document.getElementById(step.from);
+            const toEl = document.getElementById(step.to === 'entity-result' ? 'entity-result' : step.to);
+
+            if (!fromEl || !toEl) return null;
+
+            const container = document.getElementById('dataFlowContainer');
+            const containerRect = container.getBoundingClientRect();
+
+            const fromRect = fromEl.getBoundingClientRect();
+            const toRect = toEl.getBoundingClientRect();
+
+            const line = document.createElement('div');
+            line.className = 'data-flow-line';
+            line.id = `line-${step.id}`;
+
+            const label = document.createElement('div');
+            label.className = 'data-label';
+            label.textContent = step.data;
+            label.id = `label-${step.id}`;
+
+            let startX, startY;
+
+            // Tính toán vị trí cho các bước
+            if (step.id >= 1 && step.id <= 4) {
+                // Dòng chảy xuôi (Hàng ngang)
+                const margin = 10;
+                let isReverse = step.id === 4; // Bước 4 là Kho sách -> Hệ thống (ngược lại)
+                
+                let currentFromRect = isReverse ? toRect : fromRect;
+                let currentToRect = isReverse ? fromRect : toRect;
+
+                const y_offset = isReverse ? 35 : -35; // Dịch dòng ngược xuống
+                
+                let endX;
+                
+                if (isReverse) {
+                     // Reverse flow 4 (right to left)
+                    startX = currentFromRect.left - containerRect.left - margin;
+                    startY = currentFromRect.top + currentFromRect.height / 2 - containerRect.top + y_offset;
+                    endX = currentToRect.right - containerRect.left + margin;
+                } else {
+                    // Forward flow 1, 2, 3 (left to right)
+                    startX = currentFromRect.right - containerRect.left + margin;
+                    startY = currentFromRect.top + currentFromRect.height / 2 - containerRect.top + y_offset;
+                    endX = currentToRect.left - containerRect.left - margin;
+                }
+
+                const length = Math.abs(endX - startX);
+                
+                line.style.left = `${Math.min(startX, endX)}px`;
+                line.style.top = `${startY}px`;
+                line.style.width = `${length}px`;
+                line.style.transform = `translateY(-50%)`;
+
+                label.style.left = `${Math.min(startX, endX) + length / 2}px`;
+                label.style.top = `${startY + (isReverse ? 15 : -15)}px`; // Label nằm dưới dòng ngược, trên dòng xuôi
+                label.style.transform = `translate(-50%, -50%)`;
+            
+            } else if (step.id === 5 || step.id === 6) {
+                // Dòng chảy ngược/kết quả
+                const y_offset = 35; // Dịch xuống so với dòng đi xuôi
+                const margin = 10;
+                
+                if (step.id === 5) {
+                    // Bước 5: Hệ thống -> Thủ thư (Hàng ngang ngược)
+                    const systemRect = document.getElementById('entity-system').getBoundingClientRect();
+                    const librarianRect = document.getElementById('entity-librarian').getBoundingClientRect();
+                    
+                    startX = systemRect.left - containerRect.left - margin;
+                    startY = systemRect.top + systemRect.height / 2 - containerRect.top + y_offset;
+                    let endX = librarianRect.right - containerRect.left + margin;
+
+                    const length = endX - startX;
+                    
+                    line.style.left = `${startX}px`;
+                    line.style.top = `${startY}px`;
+                    line.style.width = `${length}px`;
+                    line.style.transform = `translateY(-50%)`;
+
+                    label.style.left = `${startX + length / 2}px`;
+                    label.style.top = `${startY + 15}px`; // Dịch xuống dưới đường kẻ
+                    label.style.transform = `translate(-50%, -50%)`;
+                    
+                } else if (step.id === 6) {
+                    // Bước 6: Thủ thư -> Kết quả (Đi xuống)
+                    const librarianRect = document.getElementById('entity-librarian').getBoundingClientRect();
+                    const resultRect = document.getElementById('entity-result').getBoundingClientRect();
+                    
+                    startX = librarianRect.left + librarianRect.width / 2 - containerRect.left;
+                    startY = librarianRect.bottom - containerRect.top + 30; // Điểm bắt đầu dưới TT
+                    let endX = resultRect.left + resultRect.width / 2 - containerRect.left;
+                    let endY = resultRect.top - containerRect.top - 10; // Điểm dừng trên KQ
+
+                    const length = endY - startY;
+                    
+                    line.style.left = `${startX}px`;
+                    line.style.top = `${startY}px`;
+                    line.style.height = `${length}px`;
+                    line.style.width = `3px`; // Đường kẻ dọc
+                    line.style.transform = `translateX(-50%)`;
+
+                    label.style.left = `${startX + 10}px`; // Dịch sang phải một chút
+                    label.style.top = `${startY + length / 2}px`;
+                    label.style.transform = `translate(-50%, -50%)`;
+                }
+            }
+
+            // Thêm các phần tử vào container
+            container.appendChild(line);
+            container.appendChild(label);
+            return { line, label };
+        }
+
+        // Hàm reset giao diện
+        function resetFlow() {
+            // Xóa các dòng chảy cũ
+            document.querySelectorAll('.data-flow-line, .data-label').forEach(el => el.remove());
+            
+            // Tắt highlight
+            document.querySelectorAll('.flow-item').forEach(el => {
+                el.classList.remove('ring-4', 'ring-blue-500', 'ring-opacity-75', 'scale-105', 'ring-red-500');
+            });
+            
+            // Reset text kết quả
+            document.getElementById('resultText').textContent = "Chờ xử lý...";
+            document.getElementById('resultText').classList.remove('text-green-600', 'text-red-600');
+            document.getElementById('resultText').classList.add('text-gray-600');
+
+            // Tạo lại flow elements (đảm bảo vị trí chính xác)
+            flowElements = flowSteps.map(createFlowElement).filter(e => e !== null);
+        }
+
+        // Hàm mô phỏng bước cuối cùng (cho cả thành công và thất bại)
+        async function simulateFinalResult(resultMsg, resultClass) {
+            const finalStep = flowSteps[5]; // Bước 6 (index 5)
+            const { line, label } = flowElements[5]; 
+            const librarianEl = document.getElementById(finalStep.from);
+            const resultEl = document.getElementById(finalStep.to);
+
+            // Bước 6: Thủ thư -> Kết quả
+            librarianEl.classList.add('ring-4', 'ring-blue-500', 'ring-opacity-75', 'scale-105');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            line.style.opacity = 1;
+            label.style.opacity = 1;
+            label.textContent = "Thông báo kết quả";
+            
+            resultEl.classList.add('ring-4', 'ring-blue-500', 'ring-opacity-75', 'scale-105');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Cập nhật kết quả cuối cùng
+            document.getElementById('resultText').textContent = resultMsg;
+            document.getElementById('resultText').classList.remove('text-gray-600');
+            document.getElementById('resultText').classList.add(resultClass);
+
+            // Kết thúc
+            librarianEl.classList.remove('ring-4', 'ring-blue-500', 'ring-opacity-75', 'scale-105');
+            resultEl.classList.remove('ring-4', 'ring-blue-500', 'ring-opacity-75', 'scale-105');
+
+            isProcessing = false;
+            document.getElementById('borrowButton').disabled = false;
+            document.getElementById('borrowButton').textContent = "Bắt đầu Mô phỏng lại";
+        }
+
+
+        // Hàm mô phỏng từng bước
+        async function simulateStep(stepIndex, bookId) {
+            if (isProcessing === false) return;
+
+            const step = flowSteps[stepIndex];
+            const { line, label } = flowElements[stepIndex];
+            const entity = document.getElementById(step.from);
+            const nextEntity = document.getElementById(step.to === 'entity-result' ? 'entity-result' : step.to);
+
+            // 1. Highlight đối tượng gửi
+            entity.classList.add('ring-4', 'ring-blue-500', 'ring-opacity-75', 'scale-105');
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // 2. Hiển thị dòng chảy
+            line.style.opacity = 1;
+            label.style.opacity = 1;
+
+            // 3. Highlight đối tượng nhận (tiếp theo)
+            nextEntity.classList.add('ring-4', 'ring-blue-500', 'ring-opacity-75', 'scale-105');
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // 4. Reset highlight của đối tượng gửi
+            entity.classList.remove('ring-4', 'ring-blue-500', 'ring-opacity-75', 'scale-105');
+            
+            // --- XỬ LÝ RẼ NHÁNH TẠI ĐÂY ---
+            
+            // Kịch bản 1: Lỗi Đầu Vào (Ngừng sau Bước 2 - TT -> HT)
+            if (stepIndex === 1 && bookId !== validBookId && bookId !== errorBookId) {
+                nextEntity.classList.add('ring-4', 'ring-red-500', 'ring-opacity-75', 'scale-105'); // Highlight Lỗi
+                await new Promise(resolve => setTimeout(resolve, 500));
+                nextEntity.classList.remove('ring-4', 'ring-blue-500', 'ring-opacity-75', 'scale-105');
+                
+                await simulateFinalResult(
+                    "THẤT BẠI (LỖI ĐẦU VÀO): Hệ thống trả về lỗi Mã thẻ/sách không hợp lệ.", 
+                    'text-red-600'
+                );
+                return; // Dừng luồng thành công
+            }
+
+            // Kịch bản 2: Sách Đã Hết (Ngừng sau Bước 4 - KS -> HT)
+            if (stepIndex === 3 && bookId === errorBookId) {
+                // Đã hoàn thành Bước 4 (Kho sách -> Hệ thống), nhưng Hệ thống từ chối
+                nextEntity.classList.add('ring-4', 'ring-red-500', 'ring-opacity-75', 'scale-105'); // Highlight HT từ chối
+                await new Promise(resolve => setTimeout(resolve, 500));
+                nextEntity.classList.remove('ring-4', 'ring-blue-500', 'ring-opacity-75', 'scale-105');
+
+                await simulateFinalResult(
+                    "THẤT BẠI (RẼ NHÁNH): Sách này ĐÃ HẾT HOẶC KHÔNG CÓ trong kho!", 
+                    'text-red-600'
+                );
+                return; // Dừng luồng thành công
+            }
+
+            // Kịch bản 3: Thành Công (Tiếp tục đến hết)
+            if (stepIndex < flowSteps.length - 1) {
+                simulateStep(stepIndex + 1, bookId);
+            } else {
+                // Bước cuối cùng của luồng thành công (Step 6)
+                await simulateFinalResult(
+                    "THÀNH CÔNG: Sách được chấp nhận cho mượn!", 
+                    'text-green-600'
+                );
+            }
+        }
+
+        // Hàm bắt đầu quy trình
+        function startBorrowProcess() {
+            if (isProcessing) return;
+
+            const studentId = document.getElementById('studentId').value.trim();
+            const bookId = document.getElementById('bookId').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (!studentId || !bookId) {
+                errorMsg.classList.remove('hidden');
+                return;
+            } else {
+                errorMsg.classList.add('hidden');
+            }
+
+            isProcessing = true;
+            document.getElementById('borrowButton').disabled = true;
+            document.getElementById('borrowButton').textContent = "Đang Mô phỏng...";
+
+            resetFlow();
+            
+            // Xử lý Lỗi Đầu Vào ngay từ đầu
+            if (studentId !== validStudentId && studentId !== invalidStudentId) {
+                 // Nếu mã thẻ không hợp lệ, xử lý nó như một lỗi đầu vào (dừng sớm)
+                 simulateStep(0, "InvalidInput"); // Chỉ chạy bước 1 và 2, sau đó ngắt
+            } else if (studentId === invalidStudentId || studentId === validStudentId) {
+                 // Mã thẻ hợp lệ (hoặc giả lập hợp lệ để kiểm tra sách hết)
+                 simulateStep(0, bookId);
+            }
+        }
+        
+        // --- GEMINI API INTEGRATION FUNCTION ---
+
+        // Hàm gọi API của Gemini để phân tích kịch bản
+        async function analyzeScenario() {
+            const inputEl = document.getElementById('scenarioInput');
+            const resultDiv = document.getElementById('analysisResult');
+            const resultTextEl = document.getElementById('analysisText');
+            const loadingEl = document.getElementById('loadingIndicator');
+            const analyzeBtn = document.getElementById('analyzeButton');
+
+            const userQuery = inputEl.value.trim();
+
+            if (userQuery.length < 10) {
+                resultTextEl.textContent = "Vui lòng nhập kịch bản chi tiết hơn (tối thiểu 10 ký tự).";
+                resultDiv.classList.remove('hidden');
+                return;
+            }
+
+            // Hiển thị trạng thái tải
+            resultDiv.classList.remove('hidden');
+            resultTextEl.textContent = "";
+            loadingEl.classList.remove('hidden');
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = "Đang Phân Tích...";
+
+            const systemPrompt = `Bạn là một chuyên gia phân tích dòng chảy dữ liệu (DFD) trong lĩnh vực thư viện. Phân tích kịch bản sau trong ngữ cảnh quy trình mượn sách.
+
+Yêu cầu:
+1. Xác định Dòng chảy Dữ liệu mới (Entity -> Data -> Entity).
+2. Xác định điểm rẽ nhánh hoặc lỗi (nếu có).
+3. Đưa ra Kết quả/Hệ quả cuối cùng.
+4. Trả lời bằng tiếng Việt, dưới dạng danh sách gạch đầu dòng ngắn gọn.`;
+
+            const fullPrompt = `Kịch bản mượn sách cần phân tích: "${userQuery}"
+Các đối tượng có sẵn trong hệ thống: Học sinh, Thủ thư, Hệ thống Máy tính, Kho sách.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: fullPrompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+            
+            let maxRetries = 5;
+            let delay = 1000; // 1 second
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const candidate = result.candidates?.[0];
+
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        resultTextEl.textContent = candidate.content.parts[0].text;
+                        break; // Thành công, thoát vòng lặp
+                    } else {
+                        resultTextEl.textContent = "Lỗi: Không nhận được phản hồi từ AI.";
+                        break;
+                    }
+                } catch (error) {
+                    console.error("Lỗi gọi API:", error);
+                    if (i < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; // Exponential backoff
+                    } else {
+                        resultTextEl.textContent = `Lỗi hệ thống: Không thể kết nối hoặc phân tích kịch bản sau ${maxRetries} lần thử. Vui lòng thử lại.`;
+                    }
+                }
+            }
+            
+            // Kết thúc trạng thái tải
+            loadingEl.classList.add('hidden');
+            analyzeBtn.disabled = false;
+            analyzeBtn.textContent = "Phân Tích Dòng Chảy ✨";
+        }
+
+        // Đảm bảo tạo các dòng chảy khi trang đã tải xong (Để có vị trí chính xác)
+        window.onload = () => {
+            resetFlow();
+        };
+
+    </script>
+</body>
+</html>
