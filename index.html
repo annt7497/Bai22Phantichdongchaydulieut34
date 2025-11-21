@@ -223,6 +223,7 @@
     <script>
         // Cấu hình API của Gemini
         const apiKey = ""; // API key sẽ được cung cấp trong môi trường Canvas
+        // Sửa lỗi: Đã cập nhật URL API về đúng định dạng
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
         // Cấu hình các bước Dòng chảy Dữ liệu (giữ nguyên cho mô phỏng trực quan)
@@ -535,13 +536,18 @@
             analyzeBtn.disabled = true;
             analyzeBtn.textContent = "Đang Phân Tích...";
 
-            const systemPrompt = `Bạn là một chuyên gia phân tích dòng chảy dữ liệu (DFD) trong lĩnh vực thư viện. Phân tích kịch bản sau trong ngữ cảnh quy trình mượn sách.
+            // ĐÃ CẬP NHẬT: System Prompt để tạo Sơ đồ bằng ký hiệu/Emoji
+            const systemPrompt = `Bạn là một trợ lý giảng dạy thông minh, giải thích các tình huống thư viện cho học sinh lớp 5. Phân tích kịch bản mượn sách sau.
 
 Yêu cầu:
-1. Xác định Dòng chảy Dữ liệu mới (Entity -> Data -> Entity).
-2. Xác định điểm rẽ nhánh hoặc lỗi (nếu có).
-3. Đưa ra Kết quả/Hệ quả cuối cùng.
-4. Trả lời bằng tiếng Việt, dưới dạng danh sách gạch đầu dòng ngắn gọn.`;
+1. Trả lời CỰC KỲ ngắn gọn và trực quan.
+2. SỬ DỤNG KÝ HIỆU HOẶC BIỂU TƯỢNG CẢM XÚC (EMOJI) và MŨI TÊN (→) để tạo ra SƠ ĐỒ DÒNG CHẢY đơn giản, dễ hiểu cho học sinh tiểu học.
+3. Cung cấp 3 gạch đầu dòng (bullet points) sau đây:
+   - **SƠ ĐỒ DÒNG CHẢY:** Chỉ cung cấp sơ đồ, sử dụng tên đối tượng (vd: Thủ thư) và emoji. (Ví dụ: 🧒 Học sinh → Thẻ/Sách → 👩‍💼 Thủ thư → 💻 Hệ thống)
+   - **Chuyện gì khác biệt:** Giải thích ngắn gọn nếu có lỗi hoặc sự thay đổi trong quy trình.
+   - **Kết quả cuối cùng:** Chuyện gì xảy ra cuối cùng?
+4. Tuyệt đối không dùng các từ ngữ kỹ thuật như 'Entity', 'DFD', 'Rẽ nhánh'.
+5. Trả lời bằng tiếng Việt.`;
 
             const fullPrompt = `Kịch bản mượn sách cần phân tích: "${userQuery}"
 Các đối tượng có sẵn trong hệ thống: Học sinh, Thủ thư, Hệ thống Máy tính, Kho sách.`;
